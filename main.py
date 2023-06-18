@@ -21,7 +21,7 @@ def index():
 
 @app.route('/tasks', methods=["GET"])
 def list_tasks():
-  rresult = []
+  result = []
   for row in sheet.rows:
     result.append({
       "rowId":row.id,
