@@ -21,7 +21,7 @@ def index():
 
 @app.route('/tasks', methods=["GET"])
 def list_tasks():
-  result = []
+  rresult = []
   for row in sheet.rows:
     result.append({
       "rowId":row.id,
@@ -43,6 +43,8 @@ def create_task():
 
   for col in columns:                   # iterating throught the row and getting the value
     if not col.primary:
+      if col.title not in request.form:
+        return f"Missing {col.title}", 400
       new_task.cells.append({             # of each col, assuming that the name matches
         'column_id':col.id,
         'value': request.form.get(col.title)       #request.form is being getting from reqest
@@ -70,9 +72,14 @@ def create_task():
   
 @app.route('/task', methods=["PATCH"])
 def update_task():
+  task_id = request.form.get("rowId")
+
+  if not task_id:
+    return "Missing rowId", 400
   # get task using task id from request body
   task =  smartsheet.models.Row()
-  task.id = int(request.form.get("rowId"))
+  task.id = int(task_id)
+
   
   # update task columns using values from request body
   response = smart.Sheets.get_columns(
@@ -106,9 +113,14 @@ def update_task():
   
 @app.route('/task', methods=["DELETE"])
 def delete_task():
+  task_id = request.form.get("rowId")
+
+  if not task_id:
+    return "Missing rowId", 400
+    
   smart.Sheets.delete_rows(
     sheetId,                       # sheet_id
-    [request.form.get("rowId")])     # row_ids
+    [task_id])     # row_ids
   return "ok", 200
 
 
